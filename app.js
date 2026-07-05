@@ -1,3 +1,4 @@
+console.log("APP.JS IS RUNNING");
 const express = require('express');
 const squlite3 = require('sqlite3').verbose();
 const bodyParser = require('body-parser');
@@ -5,21 +6,99 @@ const multer = require('multer');
 const path = require('path');
 
 const app = express();
+const db = new squlite3.Database('./database.db');
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static("public"));
 
+// Configure multer for file uploads
+const storage = multer.diskStorage({
+    destination: './public/uploads',
+    filename: (req, file, cb) => {
+        cb(null, Date.now() + path.extname(file.originalname));
+    }
+})
+
+const upload = multer({ storage: storage });
+
+// Initialize Database
+db.serialize(() => {
+    db.run(`CREATE TABLE IF NOT EXISTS posts ( 
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        title TEXT NOT NULL,
+        category TEXT,
+        content TEXT NOT NULL,
+        image TEXT, 
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )`);
+});
+
 //Routes
 app.get("/", (req, res) => {
-    res.sendFile(path.join(__dirname, "views", "index.html"));
+    res.sendFile(path.join(__dirname, "views", "index.html"));   
+});
+
+// posts
+app.get("/posts", (req, res) => {
+    db.all(
+        "SELECT * FROM posts ORDER BY created_at DESC", 
+        [], 
+        (err, rows) => {
+        if (err) {
+            console.error(err.message);
+            return res.status(500).json({ error: err.message });
+        }
+        res.json(rows);
+    });
+});
+
+app.get('/posts/:title', (req, res) => {
+    const postTitle = req.params.title.replace(/-/g, ' ').trim(); // Replace hyphens with spaces
+    db.get(
+        'SELECT * FROM posts WHERE TRIM(LOWER(title)) =?',
+        [postTitle.toLowerCase()],
+        (err, row) => {
+            if (err) {
+                res.status(500).json({ error: 'Database error' });
+                return;
+            } 
+            if (!row) {
+                res.status(404).json({ error: 'Post not found' });
+                return;
+            } 
+            else {
+                res.json(row);
+            }
+        }
+    );
+});
+
+app.get("/post-detail/:title", (req, res) => {
+    res.sendFile(path.join(__dirname, "views", "post-detail.html"));   
+});
+
+app.post("/add", upload.single('image'), (req, res) => {
+    const { title, category, content } = req.body;
+    const image = req.file ? `/uploads/${req.file.filename}` : null;
+
+    db.run(
+        "INSERT INTO posts (title, category, content, image, created_at) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)",
+        [title, category, content, image],
+        (err) => {
+            if (err) {
+                console.error(err.message);
+                return res.status(500).send("Insert error");
+            }
+            console.log("Post inserted with ID:", this.lastID);
+            res.redirect("/");
+        }
+    );
 });
 
 app.get("/add", (req, res) => {
     res.sendFile(path.join(__dirname, "views", "add.html"));
 });
-app.get("/add", (req, res) => {
-    res.send("ADD ROUTE WORKING");
-});
+
 
 const PORT = process.env.PORT || 3000;
 
