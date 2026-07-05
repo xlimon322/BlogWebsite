@@ -8,9 +8,17 @@ const app = express();
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static("public"));
+
 //Routes
-app.get('/', (req, res) => {
+app.get("/", (req, res) => {
     res.sendFile(path.join(__dirname, "views", "index.html"));
+});
+
+app.get("/add", (req, res) => {
+    res.sendFile(path.join(__dirname, "views", "add.html"));
+});
+app.get("/add", (req, res) => {
+    res.send("ADD ROUTE WORKING");
 });
 
 const PORT = process.env.PORT || 3000;
@@ -18,3 +26,4 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
 });
+

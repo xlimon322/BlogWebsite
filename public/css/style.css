@@ -10,9 +10,9 @@
 }
 /* Variables */
 :root{
-    --second-color: #7f10e0c9;
+    --second-color: #828282;
     --text-color: #1a1a1a;
-    --container-color: #01282f;
+    --container-color: #581b66;
     --bg-color: #fff;
     --text-alter-color: hsla(248, 67%, 5%, 0.6);
 }
@@ -75,4 +75,33 @@ header{
     padding: 7px 17px;
     font-size: 0.96rem;
     border-radius: 8px;
+}
+.home{
+    width: 100%;
+    min-height: 400px;
+    background: var(--container-color);
+    display: grid;
+    justify-content: center;
+    align-items: center;
+}
+.home-content{
+    font-size: 3.5rem;
+    text-align: center;
+}
+.search-box{
+    background: var(--bg-color);
+    border-radius: 10px;
+    padding: 5px 10px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin-top: 1.5rem;
+}
+.search-box input{
+    width: 100%;
+    border: none;
+    outline: none;
+    background: transparent;
+    font-size: 0.9rem;
+    padding: 10px 0;
 }
